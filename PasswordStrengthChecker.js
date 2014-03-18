@@ -1,5 +1,6 @@
 /*
-PasswordStrengthChecker.js v0.0.1
+PasswordStrengthChecker.js 
+version 0.2.1
 https://github.com/mardesco/CheckPasswordStrength
 (c)2014 by Jesse Smith  [http://www.jesse-smith.net]
 Dual licensed under the MIT and GPL licenses.
@@ -19,7 +20,7 @@ var PWChecker = PWChecker || function(){
 	var pw='',
 	strength=0,
 	passed = false,
-	minLength = 10,
+	minLength = 8,
 	suggestedLength = 14,
 	complexLength = 30,
 	regExp,
@@ -43,6 +44,7 @@ var PWChecker = PWChecker || function(){
 		
 		// reset the strength
 		strength = 0;
+		
 		// and the errors array
 		errors = [];
 		
@@ -52,9 +54,7 @@ var PWChecker = PWChecker || function(){
 		// convert the input to a string if it's not already
 		pw = input.toString();
 		
-		
 		//alert(' the password is ' + pw);
-				
 				
 		// does the password contain non-ASCII characters?
 		if( is_pw_outside_ascii() ){
@@ -120,7 +120,7 @@ var PWChecker = PWChecker || function(){
 			
 			// does the password contain sequential characters?
 			if( does_pw_contain_sequential_chars() ){
-				errors.push("Passwords may not contain a sequential series of characters. It&#039;s too easy for someone else to guess.");
+				errors.push("Passwords may not contain a sequential series of characters. The password you entered would be too easily guessed by an attacker.");
 				passed = false;
 				strength -= 1;
 			}else{
@@ -132,37 +132,62 @@ var PWChecker = PWChecker || function(){
 			
 			// is the password based on a common dictionary word, or a slight variation thereof?
 			if( is_common_dictionary_word() ){
-				errors.push('Your password must not contain common dictionary words.');
+				errors.push('Passwords must not contain common dictionary words.  The password you entered would be too easily guessed by an attacker.');
 				passed = false;
 				strength -= 1;
 			}else{
 				strength += 1;
 			}			
 			
-			
-			
-			// is the password similar to the user's e-mail address?
-			
-			alert("TODO:  check to see if the entered password is similar to the entered email address.");
-			
-			
-	
-			
-			
-			
+
 		}// end complexity check.
+		
+	}
+	
+	// is the password similar to the user's e-mail address?	
+	this.isPasswordSimilarToEmail = function(input){
+		if(typeof(input) != 'string'){
+			errors.push("Invalid argument: e-mail address.");
+			passed = false;
+			strength -= 1;
+		}
+		if( input.indexOf('@') == -1 || input.indexOf('.') == -1){
+			errors.push("Invalid argument: e-mail address.");
+			passed = false;
+			strength -= 1;
+		}		
+		var parts = input.split('@');
+		var little_bits = new Array();
+		// for email addresses like first.last@company.com
+		var first_parts = parts[0].split('.');
+		for(var i=0; i<first_parts.length; i++){
+			little_bits.push(first_parts[i].toLowerCase());
+		}
+		
+		//now for the main part of the domain
+		var domain_parts = parts[1].split('.');
+		little_bits.push(domain_parts[0].toLowerCase());
+		
+		//alert(little_bits);
+		
+		if(test_against_banned_word_list(little_bits)){
+			errors.push("Entered password is too similar to supplied email address.");
+			passed = false;
+			strength -= 1;
+			return true;
+		}else{
+			strength += 1;
+			return false;
+		}		
 		
 	}
 	
 
 	this.getMinLength = function(){return minLength;}
 	
+	this.isPasswordOk = function(){return passed;}
+	
 	this.getErrors = function(){
-		/*
-		for(var i=0; i<errors.length; i++){
-			alert(errors[i]);
-			}
-		*/
 		return errors;
 		}
 	
@@ -185,12 +210,16 @@ var PWChecker = PWChecker || function(){
 			return true;
 		}
 	
-		var upper = pw.toUpperCase();
+		//var upper = pw.toUpperCase();//upper == pw ||
 		var lower = pw.toLowerCase();
 		
-		if(upper == lower){
+		// had to re-think the logic here...
+		if( lower == pw){
+		
 			return true;
 		}else{
+		
+
 			return false;
 		}
 		
@@ -272,7 +301,8 @@ function does_pw_contain_sequential_chars($pw) {
 			'/*-',
 			'a1b2',
 			'abc',
-			'xyz'
+			'xyz',
+			'azerty'
 			
 		);
 	
@@ -293,8 +323,23 @@ function does_pw_contain_sequential_chars($pw) {
 	
 	// I rewrote this for simplicity.
 	// it's far from exhaustive.
+	// but it now includes some of the worst passwords of 2013:
+	// http://splashdata.com/press/worstpasswords2013.htm
 	function is_common_dictionary_word(){
-		var banned_words = new Array('password', 'business', 'customer', 'jesus', 'love', 'client', 'meeting', 'appointment', 'admin', 'pass', 'word', 'random', 'website');
+		var banned_words = new Array('password', 'business', 'customer', 'jesus', 'love', 'client', 'meeting', 'appointment', 'admin', 'pass', 'word', 'random', 'website',
+		'monkey', 'letmein', 'princess', 'trust', 'shadow', 'sunshine', 'secret', 'change');
+		
+		if(test_against_banned_word_list(banned_words)){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	
+	// I've moved the logic of is_common_dictionary_word into its own function
+	// so I can re-use it in the check against the e-mail address
+	function test_against_banned_word_list(banned_words){
 		
 		var test = convert_leet();
 		
@@ -313,8 +358,9 @@ function does_pw_contain_sequential_chars($pw) {
 			}
 		}		
 		
-		return false;
-	}	
+		return false;		
+		
+	}
 	
 	
 	// converts "leet speak" to letters
