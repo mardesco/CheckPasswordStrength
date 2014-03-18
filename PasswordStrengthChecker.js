@@ -1,6 +1,6 @@
 /*
 PasswordStrengthChecker.js 
-version 0.2.2
+version 0.2.3
 https://github.com/mardesco/CheckPasswordStrength
 (c)2014 by Jesse Smith  [http://www.jesse-smith.net]
 Dual licensed under the MIT and GPL licenses.
@@ -234,7 +234,6 @@ var PWChecker = PWChecker || function(){
 	
 	function pw_lacks_special_chars(){
 		
-		//regExp = new RegExp(/[^\p{L}\p{Nd}]/);
 		regExp = new RegExp(/(_|\W)/);
 	
 		return !regExp.test(pw);
