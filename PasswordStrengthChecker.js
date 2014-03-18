@@ -1,6 +1,6 @@
 /*
 PasswordStrengthChecker.js 
-version 0.2.1
+version 0.2.2
 https://github.com/mardesco/CheckPasswordStrength
 (c)2014 by Jesse Smith  [http://www.jesse-smith.net]
 Dual licensed under the MIT and GPL licenses.
@@ -54,8 +54,7 @@ var PWChecker = PWChecker || function(){
 		// convert the input to a string if it's not already
 		pw = input.toString();
 		
-		//alert(' the password is ' + pw);
-				
+
 		// does the password contain non-ASCII characters?
 		if( is_pw_outside_ascii() ){
 		
@@ -168,7 +167,6 @@ var PWChecker = PWChecker || function(){
 		var domain_parts = parts[1].split('.');
 		little_bits.push(domain_parts[0].toLowerCase());
 		
-		//alert(little_bits);
 		
 		if(test_against_banned_word_list(little_bits)){
 			errors.push("Entered password is too similar to supplied email address.");
